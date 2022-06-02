@@ -12,6 +12,7 @@ gamescene.init = function() {
     this.dragonMaxY = 280;
   
     this.PlayerDead = false;
+    
   };
 
 //load assets
@@ -20,6 +21,9 @@ gamescene.preload = function(){
     this.load.image('player','assets/player.png'); //loading player & giving it a label
     this.load.image('dragon','assets/dragon.png'); //loading dragon & giving it a label
     this.load.image("treasure", "assets/treasure.png");
+    this.load.audio("end",['assets/end.mp3']);
+    this.load.audio("bg",['assets/bg.mp3']);
+    this.load.audio("win",['assets/winner.mp3']);
 };
 gamescene.create=function(){
     let W=this.sys.game.config.width;
@@ -44,6 +48,10 @@ gamescene.create=function(){
     this.treasure = this.add.sprite(W-80,H/2,"treasure");
     this.treasure.setScale(0.5);
 
+    this.end=this.sound.add('end',{loop:false,rate:1.5});
+    this.bg=this.sound.add('bg',{loop:true,rate:1});
+    this.win=this.sound.add('win',{loop:false,rate:1.5});
+    
     //adding dragon 1 by 1
     // this.dragon1 = this.add.sprite(150,250,'dragon');
     // this.dragon1.setScale(0.75);
@@ -75,12 +83,13 @@ gamescene.create=function(){
     
         dragon.speed = dir * speed;
       });
-
+      this.bg.play();    
 };
 
 gamescene.update=function(){
-    if (this.PlayerDead) return;
 
+    if (this.PlayerDead) return;
+    
     //user input
     if(this.input.activePointer.isDown){
         this.player.x += this.playerSpeed;
@@ -92,8 +101,10 @@ gamescene.update=function(){
 
     // if player gets to treasure
     if (Phaser.Geom.Intersects.RectangleToRectangle(playerRect,treasureRect)){
+        this.win.play();
         this.scene.restart();
-        return this.gameOver();
+        // return this.gameOver();
+        this.bg.stop();
     }
 
     //get position of dragon
@@ -117,7 +128,8 @@ gamescene.update=function(){
         if (Phaser.Geom.Intersects.RectangleToRectangle(playerRect, dragonRect)) {
           console.log("game over");
     
-          // end the game 
+          // end the game
+          
           return this.gameOver();
         }
       }
@@ -126,16 +138,20 @@ gamescene.update=function(){
 //while ending the game if win or lose
 gamescene.gameOver = function() {
     this.PlayerDead = true;
+    this.bg.stop(); 
   
     // shake camera for ending and resetting the game
     this.cameras.main.shake(500);
-  
+    
+    this.end.play();
+    
     this.cameras.main.on("camerashakecomplete", () => {
       this.cameras.main.fade(500);
     });
   
     this.cameras.main.on("camerafadeoutcomplete", () => {
       // restart the scene
+      this.end.stop();
       this.scene.restart();
     });
   };
