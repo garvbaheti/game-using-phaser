@@ -125,7 +125,7 @@ gamescene.update=function(){
 
 //while ending the game if win or lose
 gamescene.gameOver = function() {
-    this.isPlayerAlive = false;
+    this.PlayerDead = true;
   
     // shake camera for ending and resetting the game
     this.cameras.main.shake(500);
